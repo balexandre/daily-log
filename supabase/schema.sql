@@ -29,6 +29,16 @@ create table public.habits (
   created_at timestamptz not null default now()
 );
 
+create table public.meal_tags (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  name text not null,                                                           -- Dairy, Gluten, or one you made
+  position int not null default 0,
+  archived boolean not null default false,                                      -- hidden from the meal panel
+  created_at timestamptz not null default now(),
+  unique (user_id, name)
+);
+
 -- What happened ---------------------------------------------------------------
 
 -- One row per thing logged during the day: a symptom, a meal, a coffee…
@@ -75,6 +85,7 @@ create index habit_marks_user_day on public.habit_marks (user_id, day);
 
 alter table public.symptoms enable row level security;
 alter table public.habits enable row level security;
+alter table public.meal_tags enable row level security;
 alter table public.entries enable row level security;
 alter table public.days enable row level security;
 alter table public.habit_marks enable row level security;
@@ -83,6 +94,9 @@ create policy "Own symptoms" on public.symptoms for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 create policy "Own habits" on public.habits for all to authenticated
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+
+create policy "Own meal tags" on public.meal_tags for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 create policy "Own entries" on public.entries for all to authenticated
@@ -98,4 +112,4 @@ create policy "Own habit marks" on public.habit_marks for all to authenticated
     and exists (select 1 from public.habits h where h.id = habit_id and h.user_id = (select auth.uid()))
   );
 
-grant select, insert, update, delete on public.symptoms, public.habits, public.entries, public.days, public.habit_marks to authenticated;
+grant select, insert, update, delete on public.symptoms, public.habits, public.meal_tags, public.entries, public.days, public.habit_marks to authenticated;

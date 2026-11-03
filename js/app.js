@@ -1,10 +1,10 @@
 // The Alpine.js component behind index.html: what each screen shows and what each button does.
 
-const MEAL_TAGS = ['Dairy', 'Gluten', 'Fatty / fried', 'Spicy', 'Sugar', 'Caffeine', 'Alcohol', 'Processed meat', 'Beans / onion'];
 const DRINK_TAGS = ['Caffeine', 'Alcohol', 'Sugar'];
 const VIEWS = ['today', 'month', 'patterns', 'setup'];
 
 const capitalize = (text) => (text ? text[0].toUpperCase() + text.slice(1) : '');
+const byTime = (a, b) => a.at.localeCompare(b.at);
 
 function app() {
   return {
@@ -21,15 +21,17 @@ function app() {
 
     symptoms: [],
     habits: [],
+    mealTags: [],
+    newTagName: '',
     today: Dates.key(),
-    todayEntries: [],
-    todayMarks: {},
+    day: Dates.key(),            // the day the Today screen shows; earlier days can be browsed
+    dayEntries: [],
+    dayMarks: {},
     recentMeals: [],
     cursor: { year: new Date().getFullYear(), month: new Date().getMonth() },
     monthRows: [],
     patterns: { loaded: false, loggedDays: 0, findings: [], waiting: [], strips: { rows: [] } },
 
-    MEAL_TAGS,
     DRINK_TAGS,
 
     async init() {
@@ -63,7 +65,11 @@ function app() {
     },
 
     async loadLists() {
-      [this.symptoms, this.habits] = await Promise.all([Store.listSymptoms(), Store.listHabits()]);
+      [this.symptoms, this.habits, this.mealTags] = await Promise.all([
+        Store.listSymptoms(),
+        Store.listHabits(),
+        Store.listMealTags(),
+      ]);
     },
 
     // Runs a button's action: shows any error as a toast and ignores double taps meanwhile.
@@ -81,9 +87,10 @@ function app() {
 
     showError(e) {
       console.error(e);
-      // PGRST205: Supabase can't find a table, so schema.sql hasn't been run yet.
-      const message = e?.code === 'PGRST205'
-        ? 'The database isn’t set up yet. Run supabase/schema.sql in Supabase’s SQL Editor, then reload.'
+      // PGRST205: Supabase can't find a table, so some SQL in the supabase folder hasn't been run yet.
+      const table = e?.code === 'PGRST205' ? e.message.match(/public\.(\w+)/)?.[1] : null;
+      const message = table
+        ? `The database has no “${table}” table yet. Run the SQL for it from the supabase folder in Supabase’s SQL Editor, then reload.`
         : e?.message || 'Something went wrong';
       this.showToast(message, { error: true });
     },
@@ -120,7 +127,7 @@ function app() {
     },
 
     load(view) {
-      if (view === 'today') return this.loadToday();
+      if (view === 'today') return this.loadDay();
       if (view === 'month') return this.loadMonth();
       if (view === 'patterns') return this.loadPatterns();
       return this.loadLists();
@@ -149,14 +156,28 @@ function app() {
       this.user = null;
       this.symptoms = [];
       this.habits = [];
-      this.todayEntries = [];
+      this.mealTags = [];
+      this.dayEntries = [];
       history.replaceState(null, '', location.pathname);
     },
 
-    // Today ----------------------------------------------------------------
+    // The day screen (Today, or an earlier day) ---------------------------
 
-    get todayLabel() {
-      return new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+    get isToday() {
+      return this.day === this.today;
+    },
+
+    get dayTitle() {
+      if (this.isToday) return 'Today';
+      if (this.day === Dates.addDays(this.today, -1)) return 'Yesterday';
+      return Dates.parse(this.day).toLocaleDateString(undefined, { weekday: 'long' });
+    },
+
+    get dayLabel() {
+      const sameYear = this.day.slice(0, 4) === this.today.slice(0, 4);
+      return Dates.parse(this.day).toLocaleDateString(undefined, {
+        weekday: 'long', day: 'numeric', month: 'long', year: sameYear ? undefined : 'numeric',
+      });
     },
 
     get todaySymptoms() {
@@ -175,48 +196,105 @@ function app() {
       return Dates.hhmm(iso);
     },
 
-    async loadToday() {
-      this.today = Dates.key();
-      const [entries, marks] = await Promise.all([
-        Store.entries(this.today, this.today),
-        Store.marks(this.today, this.today),
-      ]);
-      this.todayEntries = entries;
-      this.todayMarks = Object.fromEntries(marks.map((m) => [m.habit_id, true]));
+    // Opens the day screen on a given day (a date from the month grid).
+    openDay(key) {
+      this.day = key;
+      this.go('today');
     },
 
-    async toggleToday(habitId) {
-      const on = !this.todayMarks[habitId];
-      this.todayMarks[habitId] = on;
+    goToday() {
+      this.openDay(Dates.key());
+    },
+
+    shiftDay(delta) {
+      const key = Dates.addDays(this.day, delta);
+      if (key > this.today) return;
+      this.day = key;
+      return this.loadDay();
+    },
+
+    async loadDay() {
+      this.today = Dates.key();
+      if (this.day > this.today) this.day = this.today;
+      const [entries, marks] = await Promise.all([
+        Store.entries(this.day, this.day),
+        Store.marks(this.day, this.day),
+      ]);
+      this.dayEntries = entries;
+      this.dayMarks = Object.fromEntries(marks.map((m) => [m.habit_id, true]));
+    },
+
+    async toggleDayMark(habitId) {
+      const on = !this.dayMarks[habitId];
+      this.dayMarks[habitId] = on;
       try {
-        await Store.setMark(habitId, this.today, on);
+        await Store.setMark(habitId, this.day, on);
       } catch (e) {
-        this.todayMarks[habitId] = !on;
+        this.dayMarks[habitId] = !on;
         this.showError(e);
       }
     },
 
-    async addEntry({ at = new Date(), ...entry }, message = 'Saved') {
-      const saved = await Store.addEntry({ ...entry, at: at.toISOString(), day: Dates.key(at) });
-      if (saved.day === this.today) {
-        this.todayEntries = [...this.todayEntries, saved].sort((a, b) => a.at.localeCompare(b.at));
-      }
+    // A sensible time for something new: now on today, midday on an earlier day.
+    defaultTime() {
+      return this.isToday ? Dates.hhmm(new Date()) : '12:00';
+    },
+
+    // Saves a new entry, or changes to an existing one (`id`), and keeps the day's timeline in step.
+    async saveEntry({ at, ...entry }, { id = null, message = 'Saved' } = {}) {
+      const fields = { ...entry, at: at.toISOString(), day: Dates.key(at) };
+      if (fields.day > Dates.key()) throw new Error('That day hasn’t happened yet');
+      const saved = id ? await Store.updateEntry(id, fields) : await Store.addEntry(fields);
+      const others = this.dayEntries.filter((e) => e.id !== saved.id);
+      this.dayEntries = saved.day === this.day ? [...others, saved].sort(byTime) : others;
       this.sheet = null;
-      this.showToast(message, { undo: () => this.removeEntry(saved) });
+      if (id) this.showToast(saved.day === this.day ? 'Changes saved' : `Moved to ${this.shortDate(saved.day)}`);
+      else this.showToast(message, { undo: () => this.removeEntry(saved) });
       return saved;
     },
 
     async removeEntry(entry) {
       await Store.deleteEntry(entry.id);
-      this.todayEntries = this.todayEntries.filter((e) => e.id !== entry.id);
+      this.dayEntries = this.dayEntries.filter((e) => e.id !== entry.id);
     },
 
-    async confirmRemove(entry) {
-      if (confirm(`Delete “${this.describe(entry).title}”?`)) await this.removeEntry(entry);
+    // The Delete button in a panel opened from the timeline.
+    async deleteEditedEntry() {
+      const entry = this.dayEntries.find((e) => e.id === this.form.id);
+      if (!entry || !confirm(`Delete “${this.describe(entry).title}”?`)) return;
+      await this.removeEntry(entry);
+      this.sheet = null;
+      this.showToast('Deleted');
     },
 
+    // Coffee and water save in one tap on today; on an earlier day they ask for the time.
     quickAdd(kind) {
-      return this.addEntry({ kind, details: {} }, { coffee: 'Coffee +1', water: 'Water +1' }[kind]);
+      if (!this.isToday) return this.openQuick(kind);
+      return this.saveEntry({ kind, details: {}, at: new Date() }, { message: { coffee: 'Coffee +1', water: 'Water +1' }[kind] });
+    },
+
+    // Opens the panel an entry was logged with, filled in, to change or delete it.
+    editEntry(entry) {
+      const d = entry.details || {};
+      const when = { id: entry.id, date: entry.day, time: Dates.hhmm(entry.at) };
+      if (entry.kind === 'symptom') {
+        this.openSymptom(entry.symptom_id);
+        Object.assign(this.form, when, {
+          symptomId: entry.symptom_id, severity: entry.severity ?? 5, location: d.location ?? null, note: d.note ?? '', ago: 'custom',
+        });
+      } else if (entry.kind === 'meal') {
+        this.openMeal();
+        Object.assign(this.form, when, { meal: d.meal, name: d.name ?? '', tags: [...(d.tags ?? [])], portion: d.portion ?? 'normal' });
+      } else {
+        this.openQuick(entry.kind);
+        Object.assign(this.form, when, {
+          name: d.name ?? '', tags: [...(d.tags ?? [])], level: d.level ?? 'medium', type: d.type ?? 'walk', minutes: d.minutes ?? 20,
+        });
+      }
+    },
+
+    shortDate(key) {
+      return Dates.parse(key).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
     },
 
     // How an entry reads in the timeline.
@@ -258,7 +336,10 @@ function app() {
       const symptom = id
         ? this.symptomById(id)
         : this.symptoms.find((s) => !s.show_on_today) ?? this.symptoms[0];
-      this.form = { symptomId: symptom?.id ?? null, severity: 5, location: null, ago: 0, time: Dates.hhmm(new Date()), note: '' };
+      this.form = {
+        id: null, symptomId: symptom?.id ?? null, severity: 5, location: null,
+        ago: this.isToday ? 0 : 'custom', date: this.day, time: this.defaultTime(), note: '',
+      };
       this.sheet = 'symptom';
     },
 
@@ -278,24 +359,30 @@ function app() {
     saveSymptomEntry() {
       const symptom = this.formSymptom;
       if (!symptom) throw new Error('Pick a symptom first');
-      const at = this.form.ago === 'custom' ? Dates.todayAt(this.form.time) : new Date(Date.now() - this.form.ago * 60000);
-      return this.addEntry({
+      const at = this.form.ago === 'custom' ? Dates.at(this.form.date, this.form.time) : new Date(Date.now() - this.form.ago * 60000);
+      return this.saveEntry({
         kind: 'symptom',
         symptom_id: symptom.id,
         severity: symptom.rating === 'scale' ? this.form.severity : null,
         at,
         details: { name: symptom.name, location: this.form.location, note: this.form.note.trim() || null },
-      }, `${symptom.name} logged`);
+      }, { id: this.form.id, message: `${symptom.name} logged` });
     },
 
     // Log a meal -----------------------------------------------------------
 
-    async openMeal() {
-      const hour = new Date().getHours();
+    openMeal() {
+      const hour = this.isToday ? new Date().getHours() : 12;
       const meal = hour < 11 ? 'breakfast' : hour < 16 ? 'lunch' : hour < 22 ? 'dinner' : 'snack';
-      this.form = { meal, name: '', tags: [], portion: 'normal', time: Dates.hhmm(new Date()) };
+      this.form = { id: null, meal, name: '', tags: [], portion: 'normal', date: this.day, time: this.defaultTime(), newTag: '', addingTag: false };
       this.sheet = 'meal';
-      this.recentMeals = await Store.recentMeals();
+      Store.recentMeals().then((meals) => (this.recentMeals = meals)).catch((e) => this.showError(e));
+    },
+
+    // Your tags, plus any hidden one an edited meal still carries.
+    get mealTagChoices() {
+      const names = this.mealTags.map((t) => t.name);
+      return [...names, ...(this.form.tags ?? []).filter((t) => !names.includes(t))];
     },
 
     useRecentMeal(meal) {
@@ -310,45 +397,64 @@ function app() {
       if (match && !this.form.tags.length) this.form.tags = [...match.tags];
     },
 
+    // Creates a tag (or finds the one with that name) and returns its name.
+    async createMealTag(name) {
+      name = name.trim();
+      if (!name) return null;
+      const existing = this.mealTags.find((t) => t.name.toLowerCase() === name.toLowerCase());
+      if (existing) return existing.name;
+      const tag = await Store.addMealTag(name, this.mealTags.length);
+      this.mealTags = [...this.mealTags, tag];
+      return tag.name;
+    },
+
+    async addTagToMeal() {
+      const name = await this.createMealTag(this.form.newTag);
+      if (name && !this.form.tags.includes(name)) this.form.tags.push(name);
+      this.form.newTag = '';
+      this.form.addingTag = false;
+    },
+
     saveMeal() {
       const name = this.form.name.trim();
       if (!name) throw new Error('What did you eat?');
-      return this.addEntry({
+      return this.saveEntry({
         kind: 'meal',
-        at: Dates.todayAt(this.form.time),
+        at: Dates.at(this.form.date, this.form.time),
         details: { meal: this.form.meal, name, tags: this.form.tags, portion: this.form.portion },
-      }, `${capitalize(this.form.meal)} logged`);
+      }, { id: this.form.id, message: `${capitalize(this.form.meal)} logged` });
     },
 
-    // Drink, stress, exercise, meds -----------------------------------------
+    // Drink, stress, exercise, meds (and coffee or water on an earlier day) ----
 
     openQuick(kind) {
-      this.form = { kind, name: '', tags: [], level: 'medium', type: 'walk', minutes: 20, time: Dates.hhmm(new Date()) };
+      this.form = { id: null, kind, name: '', tags: [], level: 'medium', type: 'walk', minutes: 20, date: this.day, time: this.defaultTime() };
       this.sheet = 'quick';
     },
 
     get quickTitle() {
-      return { drink: 'Log a drink', stress: 'Log stress', exercise: 'Log exercise', meds: 'Log meds' }[this.form.kind];
+      const titles = { drink: 'Drink', stress: 'Stress', exercise: 'Exercise', meds: 'Meds', coffee: 'Coffee', water: 'Water' };
+      return `${this.form.id ? 'Edit' : 'Log'} · ${titles[this.form.kind]}`;
     },
 
     saveQuick() {
-      const { kind, name, tags, level, type, minutes, time } = this.form;
+      const { id, kind, name, tags, level, type, minutes, date, time } = this.form;
       const details = {
         drink: { name: name.trim(), tags },
         stress: { level },
         exercise: { type, minutes: Number(minutes) || null },
         meds: { name: name.trim() },
-      }[kind];
+      }[kind] ?? {};
       if (kind === 'drink' && !details.name) throw new Error('What did you drink?');
       if (kind === 'meds' && !details.name) throw new Error('Which meds?');
-      return this.addEntry({ kind, at: Dates.todayAt(time), details });
+      return this.saveEntry({ kind, at: Dates.at(date, time), details }, { id });
     },
 
-    // Evening check-in -----------------------------------------------------
+    // Check-in (for the day on screen) -----------------------------------
 
     async openCheckin() {
-      const [row] = await Store.days(this.today, this.today);
-      const waterLogged = this.todayEntries.filter((e) => e.kind === 'water').length;
+      const [row] = await Store.days(this.day, this.day);
+      const waterLogged = this.dayEntries.filter((e) => e.kind === 'water').length;
       this.form = {
         sleep_hours: row?.sleep_hours != null ? Number(row.sleep_hours) : 7,
         sleep_quality: row?.sleep_quality ?? null,
@@ -358,7 +464,7 @@ function app() {
         exercise: row?.exercise ?? null,
         asks: Object.fromEntries(this.checkinSymptoms.map((s) => [
           s.id,
-          this.todayEntries.some((e) => e.symptom_id === s.id) ? 'yes' : null,
+          this.dayEntries.some((e) => e.symptom_id === s.id) ? 'yes' : null,
         ])),
       };
       this.sheet = 'checkin';
@@ -380,11 +486,16 @@ function app() {
 
     async saveCheckin() {
       const { asks, ...day } = this.form;
-      await Store.saveDay(this.today, day);
+      await Store.saveDay(this.day, day);
       for (const symptom of this.checkinSymptoms) {
-        const alreadyLogged = this.todayEntries.some((e) => e.symptom_id === symptom.id);
+        const alreadyLogged = this.dayEntries.some((e) => e.symptom_id === symptom.id);
         if (asks[symptom.id] === 'yes' && !alreadyLogged) {
-          await this.addEntry({ kind: 'symptom', symptom_id: symptom.id, details: { name: symptom.name, note: 'From evening check-in' } });
+          await this.saveEntry({
+            kind: 'symptom',
+            symptom_id: symptom.id,
+            at: this.isToday ? new Date() : Dates.at(this.day, '20:00'),
+            details: { name: symptom.name, note: 'From check-in' },
+          });
         }
       }
       this.sheet = null;
@@ -448,7 +559,7 @@ function app() {
       row.marks[habitId] = on;
       try {
         await Store.setMark(habitId, row.key, on);
-        if (row.isToday) this.todayMarks[habitId] = on;
+        if (row.key === this.day) this.dayMarks[habitId] = on;
       } catch (e) {
         row.marks[habitId] = !on;
         this.showError(e);
@@ -475,7 +586,7 @@ function app() {
 
     openNote(row) {
       const label = Dates.parse(row.key).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
-      this.form = { day: row.key, label, note: row.note };
+      this.form = { day: row.key, label, note: row.note, future: row.future };
       this.sheet = 'note';
     },
 
@@ -514,7 +625,7 @@ function app() {
       setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     },
 
-    // Setup: symptoms and habits ------------------------------------------
+    // Setup: symptoms, habits and meal tags ---------------------------------
 
     // `returnTo` reopens the symptom logger after creating a symptom from it.
     openSymptomEditor(symptom = null, returnTo = null) {
@@ -582,6 +693,18 @@ function app() {
       [list[index], list[other]] = [list[other], list[index]];
       await Promise.all(list.map((h, position) => Store.saveHabit({ id: h.id, position })));
       await this.loadLists();
+    },
+
+    async addMealTagInSetup() {
+      const name = await this.createMealTag(this.newTagName);
+      this.newTagName = '';
+      if (name) this.showToast(`${name} added`);
+    },
+
+    async hideMealTag(tag) {
+      if (!confirm(`Hide “${tag.name}” from the meal panel? Meals already tagged with it keep it.`)) return;
+      await Store.saveMealTag({ id: tag.id, archived: true });
+      this.mealTags = this.mealTags.filter((t) => t.id !== tag.id);
     },
   };
 }

@@ -115,7 +115,7 @@
           <span class="text-lg font-bold tracking-tight">Daily Log</span>
           <nav aria-label="Main" class="flex gap-1">
             <template x-for="item in [['today', 'Today'], ['month', 'Month'], ['patterns', 'Patterns'], ['setup', 'Setup']]" :key="item[0]">
-              <a :href="'#' + item[0]" class="inline-flex items-center h-9 px-3.5 rounded-full text-sm font-semibold"
+              <a :href="'#' + item[0]" @click="if (item[0] === 'today') { $event.preventDefault(); goToday(); }" class="inline-flex items-center h-9 px-3.5 rounded-full text-sm font-semibold"
                 :class="view === item[0] ? 'bg-accent-soft text-accent-ink' : 'text-[#3D4350] hover:bg-black/5'" x-text="item[1]"></a>
             </template>
           </nav>
@@ -132,22 +132,34 @@
         <section x-show="view === 'today'" class="flex flex-col gap-4">
           <header class="flex items-end justify-between gap-3">
             <div>
-              <p class="text-sm font-medium text-muted" x-text="todayLabel"></p>
-              <h1 class="text-3xl font-bold tracking-tight">Today</h1>
+              <p class="text-sm font-medium text-muted" x-text="dayLabel"></p>
+              <h1 class="text-3xl font-bold tracking-tight" x-text="dayTitle"></h1>
             </div>
-            <button class="h-9 px-3.5 rounded-full bg-accent-soft text-accent-ink text-[13px] font-semibold" @click="attempt(() => openCheckin())">Evening check-in</button>
+            <div class="flex items-center">
+              <button class="icon-btn" aria-label="Previous day" @click="attempt(() => shiftDay(-1))">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+              </button>
+              <button class="icon-btn disabled:opacity-30 disabled:hover:bg-transparent" aria-label="Next day" :disabled="isToday" @click="attempt(() => shiftDay(1))">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+              </button>
+            </div>
           </header>
 
-          <!-- Today's row of the month grid -->
-          <div class="card px-1.5 py-2.5 flex overflow-x-auto" aria-label="Today's habits">
+          <div class="flex flex-wrap gap-2 -mt-1">
+            <button class="h-9 px-3.5 rounded-full bg-accent-soft text-accent-ink text-[13px] font-semibold" @click="attempt(() => openCheckin())" x-text="isToday ? 'Evening check-in' : 'Check-in for this day'"></button>
+            <button x-show="!isToday" class="h-9 px-3.5 rounded-full border border-line bg-white text-[13px] font-semibold" @click="goToday()">Back to today</button>
+          </div>
+
+          <!-- This day's row of the month grid -->
+          <div class="card px-1.5 py-2.5 flex overflow-x-auto" aria-label="Habits for this day">
             <template x-for="h in habits" :key="h.id">
-              <button class="flex-1 min-w-[58px] flex flex-col items-center gap-1 px-0.5" @click="toggleToday(h.id)" :aria-pressed="!!todayMarks[h.id]">
+              <button class="flex-1 min-w-[58px] flex flex-col items-center gap-1 px-0.5" @click="toggleDayMark(h.id)" :aria-pressed="!!dayMarks[h.id]">
                 <span class="w-7 h-7 rounded-md grid place-items-center text-xl font-bold leading-none"
-                  :class="todayMarks[h.id] ? 'bg-ink text-white' : 'border-[1.5px] border-[#C9CED6]'" x-text="todayMarks[h.id] ? '×' : ''"></span>
+                  :class="dayMarks[h.id] ? 'bg-ink text-white' : 'border-[1.5px] border-[#C9CED6]'" x-text="dayMarks[h.id] ? '×' : ''"></span>
                 <span class="text-[11px] font-semibold text-[#3D4350] text-center leading-tight" x-text="h.name"></span>
               </button>
             </template>
-            <button class="flex-1 min-w-[58px] flex flex-col items-center gap-1 text-accent-ink" @click="go('month')">
+            <button class="flex-1 min-w-[58px] flex flex-col items-center gap-1 text-accent-ink" @click="cursor = { year: +day.slice(0, 4), month: +day.slice(5, 7) - 1 }; go('month')">
               <span class="w-7 h-7 rounded-md grid place-items-center bg-accent-soft">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/></svg>
               </span>
@@ -214,26 +226,28 @@
             </div>
           </section>
 
-          <!-- Timeline -->
+          <!-- Timeline: tap an entry to change or delete it -->
           <section class="flex flex-col gap-1">
-            <h2 class="label mb-1.5">Today so far</h2>
-            <p x-show="!todayEntries.length" class="text-sm text-muted py-2">Nothing yet. Tap anything above to start today's log.</p>
-            <template x-for="e in todayEntries" :key="e.id">
-              <div class="flex gap-3 items-start py-1.5" x-data="{ d: describe(e) }">
+            <div class="flex items-baseline justify-between mb-1.5">
+              <h2 class="label" x-text="isToday ? 'Today so far' : 'Logged that day'"></h2>
+              <span x-show="dayEntries.length" class="text-xs text-muted">Tap to edit</span>
+            </div>
+            <p x-show="!dayEntries.length" class="text-sm text-muted py-2" x-text="isToday ? 'Nothing yet. Tap anything above to start today’s log.' : 'Nothing logged for this day. Anything you add above goes here.'"></p>
+            <!-- Keyed on the whole entry so an edited one is redrawn -->
+            <template x-for="e in dayEntries" :key="JSON.stringify(e)">
+              <button class="flex gap-3 items-start py-1.5 text-left rounded-xl hover:bg-black/[.03]" x-data="{ d: describe(e) }" @click="editEntry(e)" :aria-label="`Edit ${d.title}`">
                 <span class="w-11 shrink-0 pt-2 text-[13px] font-semibold" :class="d.symptom ? 'text-sym-ink' : 'text-muted'" x-text="timeOf(e.at)"></span>
-                <div class="flex-1 min-w-0 flex flex-col gap-1 rounded-xl px-2.5 py-1.5" :class="d.symptom ? 'bg-sym-soft' : ''">
+                <span class="flex-1 min-w-0 flex flex-col gap-1 rounded-xl px-2.5 py-1.5" :class="d.symptom ? 'bg-sym-soft' : ''">
                   <span class="text-sm" :class="d.symptom ? 'font-bold text-sym-ink' : 'font-semibold'" x-text="d.title"></span>
                   <span x-show="d.sub" class="text-xs text-[#7A2E08]" x-text="d.sub"></span>
-                  <div x-show="d.tags.length" class="flex flex-wrap gap-1">
+                  <span x-show="d.tags.length" class="flex flex-wrap gap-1">
                     <template x-for="t in d.tags" :key="t">
                       <span class="inline-flex items-center h-[22px] px-2 rounded-full bg-[#EEF0F3] text-[11px] font-semibold text-[#3D4350]" x-text="t"></span>
                     </template>
-                  </div>
-                </div>
-                <button class="icon-btn shrink-0 w-9 h-9 text-muted" :aria-label="`Delete ${d.title}`" @click="attempt(() => confirmRemove(e))">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                </button>
-              </div>
+                  </span>
+                </span>
+                <svg class="shrink-0 mt-2.5 mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+              </button>
             </template>
           </section>
         </section>
@@ -434,6 +448,25 @@
           </section>
 
           <section class="flex flex-col gap-2.5">
+            <h2 class="label">Meal tags</h2>
+            <div class="card p-4 flex flex-col gap-3">
+              <div class="flex flex-wrap gap-2">
+                <template x-for="tag in mealTags" :key="tag.id">
+                  <span class="chip">
+                    <span x-text="tag.name"></span>
+                    <button type="button" class="text-muted" :aria-label="`Hide ${tag.name}`" @click="attempt(() => hideMealTag(tag))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                  </span>
+                </template>
+              </div>
+              <form class="flex gap-2" @submit.prevent="attempt(() => addMealTagInSetup())">
+                <input class="input h-10 text-sm" x-model="newTagName" placeholder="Add a tag, e.g. Tomato" autocomplete="off" aria-label="New meal tag">
+                <button class="btn-secondary h-10 shrink-0">Add</button>
+              </form>
+              <p class="text-xs text-muted">Hiding a tag keeps it on meals you already logged, and Patterns still counts it.</p>
+            </div>
+          </section>
+
+          <section class="flex flex-col gap-2.5">
             <h2 class="label">Your data</h2>
             <div class="card p-4 flex flex-col gap-3">
               <p class="text-sm text-[#3D4350]">Signed in as <strong x-text="user?.email"></strong></p>
@@ -448,7 +481,7 @@
 
       <!-- Bottom tab bar on phones -->
       <nav aria-label="Main" class="md:hidden fixed inset-x-0 bottom-0 z-30 bg-white border-t border-line pt-2 pb-safe px-3 grid grid-cols-5 items-center">
-        <a href="#today" class="flex flex-col items-center gap-0.5 text-[11px]" :class="view === 'today' ? 'font-bold text-accent' : 'font-semibold text-muted'">
+        <a href="#today" @click.prevent="goToday()" class="flex flex-col items-center gap-0.5 text-[11px]" :class="view === 'today' ? 'font-bold text-accent' : 'font-semibold text-muted'">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
           Today
         </a>
@@ -480,7 +513,7 @@
           <template x-if="sheet === 'symptom'">
             <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveSymptomEntry())">
               <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
-                <h2 class="text-[22px] font-bold tracking-tight">Log a symptom</h2>
+                <h2 class="text-[22px] font-bold tracking-tight" x-text="form.id ? 'Edit symptom' : 'Log a symptom'"></h2>
                 <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
               </div>
               <div class="overflow-y-auto px-5 pb-4 flex flex-col gap-5">
@@ -516,20 +549,24 @@
                 </section>
                 <section class="flex flex-col gap-2.5">
                   <h3 class="label">When did it start?</h3>
-                  <div class="flex flex-wrap gap-2">
+                  <div x-show="!form.id && form.date === today" class="flex flex-wrap gap-2">
                     <template x-for="option in [[0, 'Just now'], [30, '30 min ago'], [60, '1 h ago'], ['custom', 'Pick time…']]" :key="option[0]">
                       <button type="button" class="chip" :class="form.ago === option[0] && 'chip-on'" @click="form.ago = option[0]" x-text="option[1]"></button>
                     </template>
                   </div>
-                  <input x-show="form.ago === 'custom'" type="time" class="input w-40" x-model="form.time" aria-label="Start time">
+                  <div x-show="form.ago === 'custom'" class="flex gap-2">
+                    <input type="date" class="input w-auto" x-model="form.date" :max="today" aria-label="Day">
+                    <input type="time" class="input w-32" x-model="form.time" aria-label="Start time">
+                  </div>
                 </section>
                 <label class="flex flex-col gap-2.5">
                   <span class="label">Note <span class="normal-case tracking-normal font-medium">(optional)</span></span>
                   <textarea class="w-full h-16 rounded-xl border border-line bg-white px-3 py-2.5 text-base resize-none focus:outline-none focus:border-accent" placeholder="Light-sensitive, after screens…" x-model="form.note"></textarea>
                 </label>
               </div>
-              <div class="px-5 pt-3 pb-safe border-t border-line">
-                <button class="btn-primary" :disabled="busy || !formSymptom" x-text="`Save ${formSymptom?.name.toLowerCase() ?? ''}`"></button>
+              <div class="px-5 pt-3 pb-safe border-t border-line flex gap-2">
+                <button x-show="form.id" type="button" class="btn-secondary shrink-0 h-14 rounded-2xl text-sym-ink" @click="attempt(() => deleteEditedEntry())">Delete</button>
+                <button class="btn-primary" :disabled="busy || !formSymptom" x-text="form.id ? 'Save changes' : `Save ${formSymptom?.name.toLowerCase() ?? ''}`"></button>
               </div>
             </form>
           </template>
@@ -538,7 +575,7 @@
           <template x-if="sheet === 'meal'">
             <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveMeal())">
               <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
-                <h2 class="text-[22px] font-bold tracking-tight">Log a meal</h2>
+                <h2 class="text-[22px] font-bold tracking-tight" x-text="form.id ? 'Edit meal' : 'Log a meal'"></h2>
                 <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
               </div>
               <div class="overflow-y-auto px-5 pb-4 flex flex-col gap-5">
@@ -560,9 +597,15 @@
                 <section class="flex flex-col gap-2.5">
                   <h3 class="label">Contains</h3>
                   <div class="flex flex-wrap gap-2">
-                    <template x-for="tag in MEAL_TAGS" :key="tag">
+                    <template x-for="tag in mealTagChoices" :key="tag">
                       <button type="button" class="chip" :class="form.tags.includes(tag) && 'chip-on'" @click="toggle(form.tags, tag)" x-text="tag"></button>
                     </template>
+                    <button x-show="!form.addingTag" type="button" class="chip chip-new" @click="form.addingTag = true; $nextTick(() => $refs.newTag.focus())">+ New tag</button>
+                  </div>
+                  <div x-show="form.addingTag" class="flex gap-2">
+                    <input x-ref="newTag" class="input h-10 text-sm" x-model="form.newTag" placeholder="e.g. Tomato, Garlic, Red wine" autocomplete="off"
+                      @keydown.enter.prevent="attempt(() => addTagToMeal())" @keydown.escape.stop="form.addingTag = false" aria-label="New tag">
+                    <button type="button" class="btn-secondary h-10 shrink-0" @click="attempt(() => addTagToMeal())">Add</button>
                   </div>
                 </section>
                 <section class="flex flex-col gap-2.5">
@@ -573,13 +616,17 @@
                     </template>
                   </div>
                 </section>
-                <label class="card flex items-center justify-between px-4 py-2.5">
+                <div class="card flex items-center justify-between gap-2 px-4 py-2.5">
                   <span class="text-[15px] font-semibold">When</span>
-                  <input type="time" class="h-10 rounded-[10px] bg-[#EEF0F3] px-3 text-base font-bold" x-model="form.time">
-                </label>
+                  <div class="flex gap-2">
+                    <input type="date" class="h-10 rounded-[10px] bg-[#EEF0F3] px-2 text-base font-bold" x-model="form.date" :max="today" aria-label="Day">
+                    <input type="time" class="h-10 rounded-[10px] bg-[#EEF0F3] px-2 text-base font-bold" x-model="form.time" aria-label="Time">
+                  </div>
+                </div>
               </div>
-              <div class="px-5 pt-3 pb-safe border-t border-line">
-                <button class="btn-primary" :disabled="busy" x-text="`Save ${form.meal}`"></button>
+              <div class="px-5 pt-3 pb-safe border-t border-line flex gap-2">
+                <button x-show="form.id" type="button" class="btn-secondary shrink-0 h-14 rounded-2xl text-sym-ink" @click="attempt(() => deleteEditedEntry())">Delete</button>
+                <button class="btn-primary" :disabled="busy" x-text="form.id ? 'Save changes' : `Save ${form.meal}`"></button>
               </div>
             </form>
           </template>
@@ -625,13 +672,17 @@
                     </label>
                   </div>
                 </template>
-                <label class="card flex items-center justify-between px-4 py-2.5">
+                <div class="card flex items-center justify-between gap-2 px-4 py-2.5">
                   <span class="text-[15px] font-semibold">When</span>
-                  <input type="time" class="h-10 rounded-[10px] bg-[#EEF0F3] px-3 text-base font-bold" x-model="form.time">
-                </label>
+                  <div class="flex gap-2">
+                    <input type="date" class="h-10 rounded-[10px] bg-[#EEF0F3] px-2 text-base font-bold" x-model="form.date" :max="today" aria-label="Day">
+                    <input type="time" class="h-10 rounded-[10px] bg-[#EEF0F3] px-2 text-base font-bold" x-model="form.time" aria-label="Time">
+                  </div>
+                </div>
               </div>
-              <div class="px-5 pt-3 pb-safe border-t border-line">
-                <button class="btn-primary" :disabled="busy">Save</button>
+              <div class="px-5 pt-3 pb-safe border-t border-line flex gap-2">
+                <button x-show="form.id" type="button" class="btn-secondary shrink-0 h-14 rounded-2xl text-sym-ink" @click="attempt(() => deleteEditedEntry())">Delete</button>
+                <button class="btn-primary" :disabled="busy" x-text="form.id ? 'Save changes' : 'Save'"></button>
               </div>
             </form>
           </template>
@@ -641,8 +692,8 @@
             <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveCheckin())">
               <div class="flex items-start justify-between pl-5 pr-3 pt-4 pb-3">
                 <div>
-                  <h2 class="text-[22px] font-bold tracking-tight">Evening check-in</h2>
-                  <p class="text-[13px] text-muted">About 30 seconds · fills the gaps in your day</p>
+                  <h2 class="text-[22px] font-bold tracking-tight" x-text="isToday ? 'Evening check-in' : 'Check-in'"></h2>
+                  <p class="text-[13px] text-muted" x-text="isToday ? 'About 30 seconds · fills the gaps in your day' : dayLabel"></p>
                 </div>
                 <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
               </div>
@@ -717,6 +768,7 @@
               </div>
               <div class="px-5 pb-4">
                 <textarea class="w-full h-28 rounded-xl border border-line bg-white px-3.5 py-3 text-base resize-none focus:outline-none focus:border-accent" placeholder="One line about the day…" x-model="form.note" x-init="$nextTick(() => $el.focus())"></textarea>
+                <button x-show="!form.future" type="button" class="mt-2 text-sm font-semibold text-accent" @click="openDay(form.day)">See and edit everything logged that day →</button>
               </div>
               <div class="px-5 pt-3 pb-safe border-t border-line">
                 <button class="btn-primary" :disabled="busy">Save note</button>

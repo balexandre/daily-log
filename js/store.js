@@ -10,6 +10,8 @@ const DEFAULT_SYMPTOMS = [
 
 const DEFAULT_HABITS = ['Water 8+', 'Walk', 'Coffee < 2pm', 'Screens off 22h'];
 
+const DEFAULT_MEAL_TAGS = ['Dairy', 'Gluten', 'Fatty / fried', 'Spicy', 'Sugar', 'Caffeine', 'Alcohol', 'Processed meat', 'Beans / onion'];
+
 // Supabase sends at most 1000 rows per request; bigger reads are fetched in pages of this size.
 const PAGE_SIZE = 1000;
 
@@ -41,9 +43,10 @@ const Dates = {
     const d = new Date(date);
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   },
-  todayAt(hhmm) {
+  // The moment `hhmm` on the day `key`.
+  at(key, hhmm) {
     const [h, m] = hhmm.split(':').map(Number);
-    const d = new Date();
+    const d = Dates.parse(key);
     d.setHours(h, m, 0, 0);
     return d;
   },
@@ -123,17 +126,21 @@ const Store = {
     this.user = null;
   },
 
-  // A new account starts with a few common symptoms and habits.
+  // A new account starts with a few common symptoms, habits and meal tags.
   async ensureDefaults() {
-    const [symptoms, habits] = await Promise.all([
+    const [symptoms, habits, mealTags] = await Promise.all([
       this.run(this.table('symptoms').select('id').limit(1)),
       this.run(this.table('habits').select('id').limit(1)),
+      this.run(this.table('meal_tags').select('id').limit(1)),
     ]);
     if (!symptoms.length) {
       await this.run(this.table('symptoms').insert(DEFAULT_SYMPTOMS.map((s, i) => this.mine({ ...s, position: i }))));
     }
     if (!habits.length) {
       await this.run(this.table('habits').insert(DEFAULT_HABITS.map((name, i) => this.mine({ name, position: i }))));
+    }
+    if (!mealTags.length) {
+      await this.run(this.table('meal_tags').insert(DEFAULT_MEAL_TAGS.map((name, i) => this.mine({ name, position: i }))));
     }
   },
 
@@ -155,6 +162,20 @@ const Store = {
     return this.save('habits', habit);
   },
 
+  listMealTags() {
+    return this.run(this.table('meal_tags').select('*').eq('archived', false).order('position').order('created_at'));
+  },
+
+  // Adding a tag you once hid brings it back instead of failing on the duplicate name.
+  addMealTag(name, position) {
+    const row = this.mine({ name, position, archived: false });
+    return this.run(this.table('meal_tags').upsert(row, { onConflict: 'user_id,name' }).select().single());
+  },
+
+  saveMealTag(tag) {
+    return this.save('meal_tags', tag);
+  },
+
   // What happened --------------------------------------------------------------
 
   entries(from, to, kind = null) {
@@ -167,6 +188,10 @@ const Store = {
 
   addEntry(entry) {
     return this.run(this.table('entries').insert(this.mine(entry)).select().single());
+  },
+
+  updateEntry(id, fields) {
+    return this.run(this.table('entries').update(fields).eq('id', id).select().single());
   },
 
   deleteEntry(id) {
@@ -208,7 +233,7 @@ const Store = {
 
   async exportAll() {
     // Each table with a column that gives the pages a stable order.
-    const order = { symptoms: 'created_at', habits: 'created_at', entries: 'at', days: 'day', habit_marks: 'day' };
+    const order = { symptoms: 'created_at', habits: 'created_at', meal_tags: 'created_at', entries: 'at', days: 'day', habit_marks: 'day' };
     const tables = Object.keys(order);
     const rows = await Promise.all(tables.map((name) => this.all(() => this.table(name).select('*').order(order[name]))));
     return {
