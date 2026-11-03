@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Daily Log</title>
+  <meta name="description" content="Log your day, symptoms and habits, and see what lines up.">
+  <meta name="theme-color" content="#F5F6F8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Daily Log">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#16181D',
+            muted: '#5B6270',
+            line: '#E3E6EB',
+            ground: '#F5F6F8',
+            accent: { DEFAULT: '#2F5BD3', soft: '#E7EDFC', ink: '#1F45B0' },
+            sym: { DEFAULT: '#B4480F', soft: '#FDEEE4', ink: '#9A3A0A', line: '#F4C9AE' },
+          },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .label { @apply text-xs font-bold uppercase tracking-wider text-muted; }
+      .card { @apply bg-white border border-line rounded-2xl; }
+      .chip { @apply inline-flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-full border border-line bg-white text-sm font-semibold text-ink; }
+      .chip-on { @apply bg-ink border-ink text-white; }
+      .chip-sym { @apply bg-sym border-sym text-white; }
+      .chip-new { @apply border-dashed border-[#9AA1AD] bg-transparent text-[#3D4350]; }
+      .tile { @apply flex flex-col items-center justify-center gap-1.5 h-16 rounded-2xl border border-line bg-white text-xs font-semibold text-ink; }
+      .input { @apply w-full h-12 rounded-xl border border-line bg-white px-3.5 text-base font-semibold text-ink focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20; }
+      .btn-primary { @apply flex items-center justify-center w-full h-14 rounded-2xl bg-accent text-white text-base font-bold disabled:opacity-50; }
+      .btn-secondary { @apply inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-[#C9CED6] bg-white text-sm font-semibold text-ink; }
+      .icon-btn { @apply inline-flex items-center justify-center w-11 h-11 rounded-full text-[#3D4350] hover:bg-black/5; }
+      .seg { @apply h-10 rounded-[10px] text-sm font-semibold text-[#3D4350]; }
+      .seg-on { @apply bg-white text-ink shadow-sm; }
+      .vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
+    }
+  </style>
+  <style>
+    [x-cloak] { display: none !important; }
+    .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/patterns.js"></script>
+  <script src="js/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body class="bg-ground font-sans text-ink antialiased" x-data="app()">
+
+<div x-show="!ready" class="min-h-screen grid place-items-center text-sm text-muted">Loading…</div>
+
+<div x-cloak x-show="ready">
+
+  <!-- Setup problem: config.js missing -->
+  <template x-if="fatal">
+    <div class="min-h-screen grid place-items-center px-4">
+      <div class="card max-w-sm p-6 flex flex-col gap-2">
+        <h1 class="text-xl font-bold">Daily Log can't start</h1>
+        <p class="text-sm text-[#3D4350]" x-text="fatal"></p>
+      </div>
+    </div>
+  </template>
+
+  <!-- Sign in -->
+  <template x-if="!fatal && !user">
+    <div class="min-h-screen grid place-items-center px-4">
+      <form class="card w-full max-w-sm p-6 flex flex-col gap-4" @submit.prevent="attempt(() => submitAuth())">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Daily Log</h1>
+          <p class="text-sm text-muted" x-text="auth.mode === 'signin' ? 'Sign in to your log.' : 'Create your account.'"></p>
+        </div>
+        <label class="flex flex-col gap-1.5">
+          <span class="label">Email</span>
+          <input class="input" type="email" autocomplete="email" required x-model="auth.email">
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="label">Password</span>
+          <input class="input" type="password" minlength="6" required x-model="auth.password" :autocomplete="auth.mode === 'signin' ? 'current-password' : 'new-password'">
+        </label>
+        <p x-show="auth.message" class="text-sm font-medium text-accent-ink" x-text="auth.message"></p>
+        <button class="btn-primary" :disabled="busy" x-text="auth.mode === 'signin' ? 'Sign in' : 'Create account'"></button>
+        <button type="button" class="text-sm font-semibold text-accent" @click="auth.mode = auth.mode === 'signin' ? 'signup' : 'signin'; auth.message = ''"
+          x-text="auth.mode === 'signin' ? 'First time? Create an account' : 'Already have an account? Sign in'"></button>
+      </form>
+    </div>
+  </template>
+
+  <!-- The app -->
+  <template x-if="!fatal && user">
+    <div>
+      <!-- Top bar on wider screens -->
+      <header class="hidden md:block bg-white border-b border-line">
+        <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+          <span class="text-lg font-bold tracking-tight">Daily Log</span>
+          <nav aria-label="Main" class="flex gap-1">
+            <template x-for="item in [['today', 'Today'], ['month', 'Month'], ['patterns', 'Patterns'], ['setup', 'Setup']]" :key="item[0]">
+              <a :href="'#' + item[0]" class="inline-flex items-center h-9 px-3.5 rounded-full text-sm font-semibold"
+                :class="view === item[0] ? 'bg-accent-soft text-accent-ink' : 'text-[#3D4350] hover:bg-black/5'" x-text="item[1]"></a>
+            </template>
+          </nav>
+          <button class="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-accent text-white text-sm font-bold" @click="openSymptom()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Log symptom
+          </button>
+        </div>
+      </header>
+
+      <main class="mx-auto px-4 md:px-6 pt-5 pb-32 md:pb-12" :class="view === 'month' ? 'max-w-6xl' : 'max-w-md'">
+
+        <!-- ============ TODAY ============ -->
+        <section x-show="view === 'today'" class="flex flex-col gap-4">
+          <header class="flex items-end justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium text-muted" x-text="todayLabel"></p>
+              <h1 class="text-3xl font-bold tracking-tight">Today</h1>
+            </div>
+            <button class="h-9 px-3.5 rounded-full bg-accent-soft text-accent-ink text-[13px] font-semibold" @click="attempt(() => openCheckin())">Evening check-in</button>
+          </header>
+
+          <!-- Today's row of the month grid -->
+          <div class="card px-1.5 py-2.5 flex overflow-x-auto" aria-label="Today's habits">
+            <template x-for="h in habits" :key="h.id">
+              <button class="flex-1 min-w-[58px] flex flex-col items-center gap-1 px-0.5" @click="toggleToday(h.id)" :aria-pressed="!!todayMarks[h.id]">
+                <span class="w-7 h-7 rounded-md grid place-items-center text-xl font-bold leading-none"
+                  :class="todayMarks[h.id] ? 'bg-ink text-white' : 'border-[1.5px] border-[#C9CED6]'" x-text="todayMarks[h.id] ? '×' : ''"></span>
+                <span class="text-[11px] font-semibold text-[#3D4350] text-center leading-tight" x-text="h.name"></span>
+              </button>
+            </template>
+            <button class="flex-1 min-w-[58px] flex flex-col items-center gap-1 text-accent-ink" @click="go('month')">
+              <span class="w-7 h-7 rounded-md grid place-items-center bg-accent-soft">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/></svg>
+              </span>
+              <span class="text-[11px] font-bold">Month</span>
+            </button>
+          </div>
+
+          <!-- Symptom buttons -->
+          <section class="card p-4 flex flex-col gap-3">
+            <div class="flex justify-between items-baseline">
+              <h2 class="text-base font-bold">Feeling something?</h2>
+              <span class="text-xs text-muted">Tap to log it</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2.5">
+              <template x-for="s in todaySymptoms" :key="s.id">
+                <button class="h-[72px] rounded-2xl bg-sym-soft border border-sym-line text-sym-ink text-[13px] font-bold flex flex-col items-center justify-center gap-1.5 px-1 text-center leading-tight" @click="openSymptom(s.id)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M7.5 13c1.5-2 3 2 4.5 0s3 2 4.5 0"/></svg>
+                  <span x-text="s.name"></span>
+                </button>
+              </template>
+              <button class="h-[72px] rounded-2xl border-[1.5px] border-dashed border-[#C9CED6] text-[#3D4350] text-[13px] font-semibold flex flex-col items-center justify-center gap-1.5" @click="openSymptom()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                Other
+              </button>
+            </div>
+          </section>
+
+          <!-- Quick add -->
+          <section class="flex flex-col gap-2.5">
+            <h2 class="label">Quick add</h2>
+            <div class="grid grid-cols-4 gap-2.5">
+              <button class="tile" @click="attempt(() => openMeal())">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 2-3 5s1 4 3 4v9"/></svg>
+                Meal
+              </button>
+              <button class="tile" @click="attempt(() => quickAdd('coffee'))">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v4a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V9zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v3M12 3v3"/></svg>
+                Coffee +1
+              </button>
+              <button class="tile" @click="attempt(() => quickAdd('water'))">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>
+                Water +1
+              </button>
+              <button class="tile" @click="openQuick('drink')">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l-1.5 17a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1L6 3zM6.5 8h11"/></svg>
+                Drink
+              </button>
+              <button class="tile" @click="attempt(() => openCheckin())">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+                Sleep
+              </button>
+              <button class="tile" @click="openQuick('stress')">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6l1-7z"/></svg>
+                Stress
+              </button>
+              <button class="tile" @click="openQuick('exercise')">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>
+                Exercise
+              </button>
+              <button class="tile" @click="openQuick('meds')">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F5BD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M9.5 9.5l5 5"/></svg>
+                Meds
+              </button>
+            </div>
+          </section>
+
+          <!-- Timeline -->
+          <section class="flex flex-col gap-1">
+            <h2 class="label mb-1.5">Today so far</h2>
+            <p x-show="!todayEntries.length" class="text-sm text-muted py-2">Nothing yet. Tap anything above to start today's log.</p>
+            <template x-for="e in todayEntries" :key="e.id">
+              <div class="flex gap-3 items-start py-1.5" x-data="{ d: describe(e) }">
+                <span class="w-11 shrink-0 pt-2 text-[13px] font-semibold" :class="d.symptom ? 'text-sym-ink' : 'text-muted'" x-text="timeOf(e.at)"></span>
+                <div class="flex-1 min-w-0 flex flex-col gap-1 rounded-xl px-2.5 py-1.5" :class="d.symptom ? 'bg-sym-soft' : ''">
+                  <span class="text-sm" :class="d.symptom ? 'font-bold text-sym-ink' : 'font-semibold'" x-text="d.title"></span>
+                  <span x-show="d.sub" class="text-xs text-[#7A2E08]" x-text="d.sub"></span>
+                  <div x-show="d.tags.length" class="flex flex-wrap gap-1">
+                    <template x-for="t in d.tags" :key="t">
+                      <span class="inline-flex items-center h-[22px] px-2 rounded-full bg-[#EEF0F3] text-[11px] font-semibold text-[#3D4350]" x-text="t"></span>
+                    </template>
+                  </div>
+                </div>
+                <button class="icon-btn shrink-0 w-9 h-9 text-muted" :aria-label="`Delete ${d.title}`" @click="attempt(() => confirmRemove(e))">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+              </div>
+            </template>
+          </section>
+        </section>
+
+        <!-- ============ MONTH ============ -->
+        <section x-show="view === 'month'" class="flex flex-col gap-3">
+          <div class="flex items-center justify-between md:justify-start gap-2">
+            <button class="icon-btn" aria-label="Previous month" @click="attempt(() => shiftMonth(-1))">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight md:min-w-[260px] text-center" x-text="monthLabel"></h1>
+            <button class="icon-btn" aria-label="Next month" @click="attempt(() => shiftMonth(1))">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <p class="text-xs text-muted text-center md:text-left">Tap a square to mark it · tap a date for that day's note</p>
+
+          <div class="card overflow-x-auto px-2.5 md:px-4 pt-1.5 pb-2">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="border-b-2 border-ink h-24 md:h-32">
+                  <th class="w-10 md:w-16 text-left align-bottom pb-2"><span class="label">Day</span></th>
+                  <th class="hidden md:table-cell text-left align-bottom pb-2 pl-3"><span class="label">Memorable moment</span></th>
+                  <template x-for="h in habits" :key="h.id">
+                    <th class="w-7 md:w-11 align-bottom pb-1.5 font-bold">
+                      <button class="vertical text-[11px] md:text-xs whitespace-nowrap hover:text-accent" @click="openHabitEditor(h)" x-text="h.name"></button>
+                    </th>
+                  </template>
+                  <th class="w-7 md:w-11 align-bottom pb-1.5">
+                    <button class="inline-grid place-items-center w-[22px] h-[22px] md:w-7 md:h-7 rounded-md border-[1.5px] border-dashed border-[#9AA1AD] text-[#3D4350]" aria-label="Add a habit column" @click="openHabitEditor()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                  </th>
+                  <template x-for="s in gridSymptoms" :key="s.id">
+                    <th class="w-7 md:w-11 align-bottom pb-1.5 font-bold text-sym-ink">
+                      <span class="vertical inline-block text-[11px] md:text-xs whitespace-nowrap" x-text="s.name"></span>
+                    </th>
+                  </template>
+                  <th class="w-20 md:w-48 align-bottom pb-1.5 pl-2 text-left">
+                    <span class="block text-[11px] md:text-xs font-bold text-accent-ink">Sleep (h)</span>
+                    <span class="flex justify-between text-[10px] md:text-[11px] font-normal text-muted mx-1"><span>5</span><span>7</span><span>9</span></span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="r in monthRows" :key="r.key">
+                  <tr class="border-b border-[#EEF0F3]" :class="r.isToday ? 'bg-accent-soft' : (r.weekend ? 'bg-ground' : '')">
+                    <td class="p-0">
+                      <button class="flex items-center gap-1 h-[22px] md:h-8 w-full" @click="openNote(r)" :aria-label="`Note for ${r.key}`">
+                        <span class="text-[11px] md:text-[13px] font-bold w-4 md:w-5 text-right" x-text="r.n"></span>
+                        <span class="text-[9px] md:text-[11px] font-semibold text-muted" x-text="r.wd"></span>
+                        <span x-show="r.note" class="md:hidden w-1 h-1 rounded-full bg-accent"></span>
+                      </button>
+                    </td>
+                    <td class="hidden md:table-cell p-0 pl-3 max-w-0 w-full">
+                      <button class="w-full text-left truncate text-sm" :class="r.note ? '' : 'text-[#9AA1AD]'" @click="openNote(r)" x-text="r.note || (r.future ? '' : 'Add a note…')"></button>
+                    </td>
+                    <template x-for="h in habits" :key="h.id">
+                      <td class="border-l border-[#EEF0F3] p-0">
+                        <button class="w-full h-[22px] md:h-8 grid place-items-center text-[15px] md:text-lg font-bold leading-none hover:bg-accent-soft disabled:hover:bg-transparent"
+                          :disabled="r.future" @click="toggleMonth(r, h.id)" :aria-pressed="!!r.marks[h.id]" :aria-label="`${h.name}, ${r.key}`"
+                          x-text="r.marks[h.id] ? '×' : ''"></button>
+                      </td>
+                    </template>
+                    <td class="border-l border-[#EEF0F3]"></td>
+                    <template x-for="s in gridSymptoms" :key="s.id">
+                      <td class="border-l border-[#EEF0F3] text-center p-0">
+                        <span x-show="r.severity[s.id] !== undefined" class="inline-grid place-items-center w-5 h-3.5 md:w-7 md:h-5 rounded bg-sym text-white text-[10px] md:text-xs font-bold"
+                          x-text="r.severity[s.id] || '✓'"></span>
+                      </td>
+                    </template>
+                    <td class="border-l border-[#EEF0F3] p-0 pl-2">
+                      <div class="relative h-[22px] md:h-8 mx-1">
+                        <span class="absolute inset-y-0 left-1/2 border-l border-dashed border-[#C9CED6]"></span>
+                        <span x-show="r.sleep != null" class="absolute top-1/2 -translate-y-1/2 -ml-1 w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-accent"
+                          :style="`left: ${sleepPercent(r.sleep)}%`" :title="r.sleep != null ? formatHours(r.sleep) : ''"></span>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+              <tfoot>
+                <tr class="border-t-2 border-ink h-10">
+                  <td><span class="label">Total</span></td>
+                  <td class="hidden md:table-cell"></td>
+                  <template x-for="h in habits" :key="h.id">
+                    <td class="text-center text-xs md:text-sm font-bold" x-text="habitTotal(h.id)"></td>
+                  </template>
+                  <td></td>
+                  <template x-for="s in gridSymptoms" :key="s.id">
+                    <td class="text-center text-xs md:text-sm font-bold text-sym-ink" x-text="symptomTotal(s.id)"></td>
+                  </template>
+                  <td class="pl-2 text-[11px] md:text-sm font-bold text-accent-ink" x-text="`avg ${averageSleep} h`"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============ PATTERNS ============ -->
+        <section x-show="view === 'patterns'" class="flex flex-col gap-3.5">
+          <header>
+            <p class="text-sm font-medium text-muted">Last 60 days · <span x-text="patterns.loggedDays"></span> days logged</p>
+            <h1 class="text-3xl font-bold tracking-tight">Patterns</h1>
+          </header>
+
+          <section class="card p-4 flex flex-col gap-2.5">
+            <div class="flex justify-between items-baseline">
+              <h2 class="label">Last 30 days</h2>
+              <span class="text-xs text-muted" x-text="patterns.strips.from ? `${stripLabel(patterns.strips.from)} → today` : ''"></span>
+            </div>
+            <template x-for="row in patterns.strips.rows" :key="row.label">
+              <div class="flex items-center gap-2">
+                <span class="w-20 shrink-0 text-xs font-semibold truncate" :class="row.kind === 'sleep' ? 'text-muted' : 'text-sym-ink'" x-text="row.label"></span>
+                <div class="flex-1 grid gap-0.5" style="grid-template-columns: repeat(30, minmax(0, 1fr))">
+                  <template x-for="cell in row.cells" :key="cell.key">
+                    <span class="block h-[18px] rounded-[3px]" :title="stripLabel(cell.key)"
+                      :class="cell.on ? (row.kind === 'sleep' ? 'bg-muted' : 'bg-sym') : 'bg-[#E9ECF0]'"></span>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </section>
+
+          <h2 class="label mt-1">What tends to come before</h2>
+
+          <template x-for="f in patterns.findings" :key="f.id">
+            <article class="card px-4 py-3.5 flex flex-col gap-2">
+              <div class="flex justify-between items-start gap-2">
+                <h3 class="text-base font-bold" x-text="f.title"></h3>
+                <span class="shrink-0 inline-flex items-center h-[22px] px-2 rounded-full text-[11px] font-bold"
+                  :class="f.strength === 'Strong' ? 'bg-sym-soft text-sym-ink' : f.strength === 'Likely' ? 'bg-accent-soft text-accent-ink' : 'bg-[#EEF0F3] text-[#3D4350]'"
+                  x-text="f.strength"></span>
+              </div>
+              <p class="text-sm text-[#3D4350] leading-relaxed" x-text="f.text"></p>
+              <div class="h-2 rounded-full bg-[#EEF0F3] overflow-hidden"><div class="h-2 bg-accent" :style="`width: ${Math.round(f.share * 100)}%`"></div></div>
+            </article>
+          </template>
+
+          <div x-show="patterns.loaded && !patterns.findings.length" class="card px-4 py-3.5 text-sm text-[#3D4350] leading-relaxed">
+            <p x-show="patterns.loggedDays < 14">Keep logging: patterns need about two weeks of days to compare. You have <strong x-text="patterns.loggedDays"></strong> so far.</p>
+            <p x-show="patterns.loggedDays >= 14">Nothing stands out yet. The more you log around your symptoms, the clearer this gets.</p>
+          </div>
+
+          <template x-for="w in patterns.waiting" :key="w.name">
+            <p class="text-xs text-muted" x-text="`${w.name}: ${w.days} ${w.days === 1 ? 'day' : 'days'} logged, needs a few more to compare.`"></p>
+          </template>
+
+          <div class="flex flex-col gap-2 mt-1">
+            <button class="btn-secondary w-full h-12" @click="attempt(() => exportData())">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+              Export everything (JSON)
+            </button>
+            <p class="text-xs text-muted text-center">Patterns, not a diagnosis. Take them to your doctor.</p>
+          </div>
+        </section>
+
+        <!-- ============ SETUP ============ -->
+        <section x-show="view === 'setup'" class="flex flex-col gap-5">
+          <h1 class="text-3xl font-bold tracking-tight">Setup</h1>
+
+          <section class="flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <h2 class="label">Symptoms</h2>
+              <button class="text-sm font-semibold text-accent" @click="openSymptomEditor()">+ Add symptom</button>
+            </div>
+            <div class="card divide-y divide-[#EEF0F3]">
+              <template x-for="s in symptoms" :key="s.id">
+                <button class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left" @click="openSymptomEditor(s)">
+                  <span class="flex flex-col">
+                    <span class="text-[15px] font-semibold" x-text="s.name"></span>
+                    <span class="text-xs text-muted" x-text="[s.rating === 'scale' ? 'Rated 1–10' : 'Yes / no', s.show_on_today ? 'on Today' : null, s.ask_in_checkin ? 'in check-in' : null].filter(Boolean).join(' · ')"></span>
+                  </span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9AA1AD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+              </template>
+            </div>
+          </section>
+
+          <section class="flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <h2 class="label">Habits (month grid columns)</h2>
+              <button class="text-sm font-semibold text-accent" @click="openHabitEditor()">+ Add habit</button>
+            </div>
+            <div class="card divide-y divide-[#EEF0F3]">
+              <template x-for="(h, i) in habits" :key="h.id">
+                <div class="flex items-center gap-1 pl-4 pr-1.5 py-1.5">
+                  <button class="flex-1 text-left text-[15px] font-semibold py-1.5" @click="openHabitEditor(h)" x-text="h.name"></button>
+                  <button class="icon-btn w-9 h-9 disabled:opacity-30" :disabled="i === 0" :aria-label="`Move ${h.name} up`" @click="attempt(() => moveHabit(i, -1))">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+                  </button>
+                  <button class="icon-btn w-9 h-9 disabled:opacity-30" :disabled="i === habits.length - 1" :aria-label="`Move ${h.name} down`" @click="attempt(() => moveHabit(i, 1))">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </section>
+
+          <section class="flex flex-col gap-2.5">
+            <h2 class="label">Your data</h2>
+            <div class="card p-4 flex flex-col gap-3">
+              <p class="text-sm text-[#3D4350]">Signed in as <strong x-text="user?.email"></strong></p>
+              <div class="flex flex-wrap gap-2">
+                <button class="btn-secondary" @click="attempt(() => exportData())">Export everything (JSON)</button>
+                <button class="btn-secondary" @click="attempt(() => signOut())">Sign out</button>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <!-- Bottom tab bar on phones -->
+      <nav aria-label="Main" class="md:hidden fixed inset-x-0 bottom-0 z-30 bg-white border-t border-line pt-2 pb-safe px-3 grid grid-cols-5 items-center">
+        <a href="#today" class="flex flex-col items-center gap-0.5 text-[11px]" :class="view === 'today' ? 'font-bold text-accent' : 'font-semibold text-muted'">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+          Today
+        </a>
+        <a href="#month" class="flex flex-col items-center gap-0.5 text-[11px]" :class="view === 'month' ? 'font-bold text-accent' : 'font-semibold text-muted'">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/></svg>
+          Month
+        </a>
+        <div class="flex justify-center">
+          <button class="grid place-items-center w-14 h-14 -mt-6 rounded-full bg-accent text-white shadow-[0_6px_16px_rgba(47,91,211,.35)]" aria-label="Log a symptom" @click="openSymptom()">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <a href="#patterns" class="flex flex-col items-center gap-0.5 text-[11px]" :class="view === 'patterns' ? 'font-bold text-accent' : 'font-semibold text-muted'">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M11 20V5M17 20v-7M3 20h18"/></svg>
+          Patterns
+        </a>
+        <a href="#setup" class="flex flex-col items-center gap-0.5 text-[11px]" :class="view === 'setup' ? 'font-bold text-accent' : 'font-semibold text-muted'">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>
+          Setup
+        </a>
+      </nav>
+
+      <!-- ============ SHEETS (bottom sheet on phones, dialog on wider screens) ============ -->
+      <div x-show="sheet" x-transition.opacity class="fixed inset-0 z-40 bg-black/30" @click="closeSheet()"></div>
+      <div x-show="sheet" class="fixed inset-x-0 bottom-0 z-50 md:inset-0 md:grid md:place-items-center pointer-events-none" @keydown.escape.window="closeSheet()">
+        <div class="pointer-events-auto w-full md:max-w-md max-h-[92vh] flex flex-col bg-ground rounded-t-3xl md:rounded-3xl shadow-2xl" role="dialog" aria-modal="true">
+
+          <!-- Log a symptom -->
+          <template x-if="sheet === 'symptom'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveSymptomEntry())">
+              <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
+                <h2 class="text-[22px] font-bold tracking-tight">Log a symptom</h2>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="overflow-y-auto px-5 pb-4 flex flex-col gap-5">
+                <section class="flex flex-col gap-2.5">
+                  <h3 class="label">What is it?</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="s in symptoms" :key="s.id">
+                      <button type="button" class="chip" :class="form.symptomId === s.id && 'chip-sym'" @click="pickSymptom(s.id)" x-text="s.name"></button>
+                    </template>
+                    <button type="button" class="chip chip-new" @click="openSymptomEditor(null, 'symptom')">+ New symptom</button>
+                  </div>
+                </section>
+                <section x-show="formSymptom?.rating === 'scale'" class="flex flex-col gap-2.5">
+                  <div class="flex justify-between items-baseline">
+                    <h3 class="label">How bad?</h3>
+                    <span class="text-sm font-bold text-sym-ink" x-text="`${form.severity} · ${severityLabel(form.severity)}`"></span>
+                  </div>
+                  <div class="grid grid-cols-10 gap-1">
+                    <template x-for="n in 10" :key="n">
+                      <button type="button" class="h-10 rounded-[10px] border text-sm font-bold"
+                        :class="form.severity === n ? 'bg-sym border-sym text-white' : 'bg-white border-line'" @click="form.severity = n" x-text="n"></button>
+                    </template>
+                  </div>
+                  <div class="flex justify-between text-xs text-muted"><span>Barely there</span><span>Worst ever</span></div>
+                </section>
+                <section x-show="formSymptom?.locations.length" class="flex flex-col gap-2.5">
+                  <h3 class="label">Where?</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="place in formSymptom?.locations ?? []" :key="place">
+                      <button type="button" class="chip" :class="form.location === place && 'chip-on'" @click="form.location = form.location === place ? null : place" x-text="place"></button>
+                    </template>
+                  </div>
+                </section>
+                <section class="flex flex-col gap-2.5">
+                  <h3 class="label">When did it start?</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="option in [[0, 'Just now'], [30, '30 min ago'], [60, '1 h ago'], ['custom', 'Pick time…']]" :key="option[0]">
+                      <button type="button" class="chip" :class="form.ago === option[0] && 'chip-on'" @click="form.ago = option[0]" x-text="option[1]"></button>
+                    </template>
+                  </div>
+                  <input x-show="form.ago === 'custom'" type="time" class="input w-40" x-model="form.time" aria-label="Start time">
+                </section>
+                <label class="flex flex-col gap-2.5">
+                  <span class="label">Note <span class="normal-case tracking-normal font-medium">(optional)</span></span>
+                  <textarea class="w-full h-16 rounded-xl border border-line bg-white px-3 py-2.5 text-base resize-none focus:outline-none focus:border-accent" placeholder="Light-sensitive, after screens…" x-model="form.note"></textarea>
+                </label>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy || !formSymptom" x-text="`Save ${formSymptom?.name.toLowerCase() ?? ''}`"></button>
+              </div>
+            </form>
+          </template>
+
+          <!-- Log a meal -->
+          <template x-if="sheet === 'meal'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveMeal())">
+              <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
+                <h2 class="text-[22px] font-bold tracking-tight">Log a meal</h2>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="overflow-y-auto px-5 pb-4 flex flex-col gap-5">
+                <div class="grid grid-cols-4 gap-1 p-1 rounded-[14px] bg-[#E9ECF0]" role="group" aria-label="Meal">
+                  <template x-for="m in ['breakfast', 'lunch', 'dinner', 'snack']" :key="m">
+                    <button type="button" class="seg capitalize" :class="form.meal === m && 'seg-on'" @click="form.meal = m" x-text="m"></button>
+                  </template>
+                </div>
+                <label class="flex flex-col gap-2">
+                  <span class="label">What did you eat?</span>
+                  <input class="input" x-model="form.name" @change="matchRecentMeal()" placeholder="Pasta carbonara" autocomplete="off">
+                </label>
+                <div x-show="recentMeals.length" class="flex flex-wrap gap-1.5 items-center -mt-3">
+                  <span class="text-xs text-muted">Recent:</span>
+                  <template x-for="m in recentMeals" :key="m.name">
+                    <button type="button" class="chip h-8 px-2.5 text-[13px]" @click="useRecentMeal(m)" x-text="m.name"></button>
+                  </template>
+                </div>
+                <section class="flex flex-col gap-2.5">
+                  <h3 class="label">Contains</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="tag in MEAL_TAGS" :key="tag">
+                      <button type="button" class="chip" :class="form.tags.includes(tag) && 'chip-on'" @click="toggle(form.tags, tag)" x-text="tag"></button>
+                    </template>
+                  </div>
+                </section>
+                <section class="flex flex-col gap-2.5">
+                  <h3 class="label">How much?</h3>
+                  <div class="grid grid-cols-3 gap-2">
+                    <template x-for="p in ['light', 'normal', 'big']" :key="p">
+                      <button type="button" class="chip capitalize" :class="form.portion === p && 'chip-on'" @click="form.portion = p" x-text="p"></button>
+                    </template>
+                  </div>
+                </section>
+                <label class="card flex items-center justify-between px-4 py-2.5">
+                  <span class="text-[15px] font-semibold">When</span>
+                  <input type="time" class="h-10 rounded-[10px] bg-[#EEF0F3] px-3 text-base font-bold" x-model="form.time">
+                </label>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy" x-text="`Save ${form.meal}`"></button>
+              </div>
+            </form>
+          </template>
+
+          <!-- Drink, stress, exercise, meds -->
+          <template x-if="sheet === 'quick'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveQuick())">
+              <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
+                <h2 class="text-[22px] font-bold tracking-tight" x-text="quickTitle"></h2>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="overflow-y-auto px-5 pb-4 flex flex-col gap-5">
+                <template x-if="form.kind === 'drink' || form.kind === 'meds'">
+                  <label class="flex flex-col gap-2">
+                    <span class="label" x-text="form.kind === 'drink' ? 'What?' : 'Which meds?'"></span>
+                    <input class="input" x-model="form.name" :placeholder="form.kind === 'drink' ? 'Glass of wine' : 'Ibuprofen 400 mg'" autocomplete="off">
+                  </label>
+                </template>
+                <template x-if="form.kind === 'drink'">
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="tag in DRINK_TAGS" :key="tag">
+                      <button type="button" class="chip" :class="form.tags.includes(tag) && 'chip-on'" @click="toggle(form.tags, tag)" x-text="tag"></button>
+                    </template>
+                  </div>
+                </template>
+                <template x-if="form.kind === 'stress'">
+                  <div class="grid grid-cols-3 gap-2">
+                    <template x-for="level in ['low', 'medium', 'high']" :key="level">
+                      <button type="button" class="chip capitalize" :class="form.level === level && 'chip-on'" @click="form.level = level" x-text="level"></button>
+                    </template>
+                  </div>
+                </template>
+                <template x-if="form.kind === 'exercise'">
+                  <div class="flex flex-col gap-4">
+                    <div class="grid grid-cols-3 gap-2">
+                      <template x-for="type in ['walk', 'workout', 'other']" :key="type">
+                        <button type="button" class="chip capitalize" :class="form.type === type && 'chip-on'" @click="form.type = type" x-text="type"></button>
+                      </template>
+                    </div>
+                    <label class="card flex items-center justify-between px-4 py-2.5">
+                      <span class="text-[15px] font-semibold">Minutes</span>
+                      <input type="number" min="0" step="5" inputmode="numeric" class="w-24 h-10 rounded-[10px] bg-[#EEF0F3] px-3 text-base font-bold text-right" x-model.number="form.minutes">
+                    </label>
+                  </div>
+                </template>
+                <label class="card flex items-center justify-between px-4 py-2.5">
+                  <span class="text-[15px] font-semibold">When</span>
+                  <input type="time" class="h-10 rounded-[10px] bg-[#EEF0F3] px-3 text-base font-bold" x-model="form.time">
+                </label>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy">Save</button>
+              </div>
+            </form>
+          </template>
+
+          <!-- Evening check-in -->
+          <template x-if="sheet === 'checkin'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveCheckin())">
+              <div class="flex items-start justify-between pl-5 pr-3 pt-4 pb-3">
+                <div>
+                  <h2 class="text-[22px] font-bold tracking-tight">Evening check-in</h2>
+                  <p class="text-[13px] text-muted">About 30 seconds · fills the gaps in your day</p>
+                </div>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="overflow-y-auto px-4 pb-4">
+                <div class="card divide-y divide-[#EEF0F3]">
+                  <div class="px-4 py-3.5 flex flex-col gap-2.5">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-[15px] font-bold">Sleep last night</h3>
+                      <div class="flex items-center gap-2.5">
+                        <button type="button" class="w-10 h-10 rounded-xl border border-line bg-white grid place-items-center" aria-label="Less sleep" @click="stepSleep(-0.25)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+                        <span class="min-w-[68px] text-center text-base font-bold" x-text="formatHours(form.sleep_hours)"></span>
+                        <button type="button" class="w-10 h-10 rounded-xl border border-line bg-white grid place-items-center" aria-label="More sleep" @click="stepSleep(0.25)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      <template x-for="q in [['poor', 'Poor'], ['ok', 'OK'], ['good', 'Good']]" :key="q[0]">
+                        <button type="button" class="chip rounded-xl" :class="form.sleep_quality === q[0] && 'chip-on'" @click="form.sleep_quality = q[0]" x-text="q[1]"></button>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="px-4 py-3.5 flex flex-col gap-2.5">
+                    <div class="flex items-baseline justify-between">
+                      <h3 class="text-[15px] font-bold">Water</h3>
+                      <span class="text-sm font-bold text-accent-ink" x-text="`${form.water_glasses} ${form.water_glasses === 1 ? 'glass' : 'glasses'}`"></span>
+                    </div>
+                    <div class="flex justify-between">
+                      <template x-for="n in 10" :key="n">
+                        <button type="button" class="w-[26px] h-9 rounded-[4px_4px_8px_8px]" :class="n <= form.water_glasses ? 'bg-accent' : 'bg-line'" :aria-label="`${n} glasses`" @click="setWater(n)"></button>
+                      </template>
+                    </div>
+                  </div>
+                  <template x-for="question in [
+                    ['stress', 'Stress today', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]],
+                    ['screen_time', 'Screen time', [['under4', 'Under 4 h'], ['4to8', '4 – 8 h'], ['over8', '8 h +']]],
+                    ['exercise', 'Moved your body?', [['none', 'No'], ['walk', 'A walk'], ['workout', 'Workout']]],
+                  ]" :key="question[0]">
+                    <div class="px-4 py-3.5 flex flex-col gap-2.5">
+                      <h3 class="text-[15px] font-bold" x-text="question[1]"></h3>
+                      <div class="grid grid-cols-3 gap-2">
+                        <template x-for="option in question[2]" :key="option[0]">
+                          <button type="button" class="chip rounded-xl" :class="form[question[0]] === option[0] && 'chip-on'" @click="form[question[0]] = option[0]" x-text="option[1]"></button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-for="s in checkinSymptoms" :key="s.id">
+                    <div class="px-4 py-3.5 flex items-center justify-between gap-3">
+                      <h3 class="text-[15px] font-bold" x-text="`Any ${s.name.toLowerCase()} today?`"></h3>
+                      <div class="flex gap-2">
+                        <button type="button" class="chip rounded-xl w-16" :class="form.asks[s.id] === 'yes' && 'chip-on'" @click="form.asks[s.id] = 'yes'">Yes</button>
+                        <button type="button" class="chip rounded-xl w-16" :class="form.asks[s.id] === 'no' && 'chip-on'" @click="form.asks[s.id] = 'no'">No</button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy">Done for today</button>
+              </div>
+            </form>
+          </template>
+
+          <!-- Day note -->
+          <template x-if="sheet === 'note'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveNote())">
+              <div class="flex items-start justify-between pl-5 pr-3 pt-4 pb-2">
+                <div>
+                  <h2 class="text-[22px] font-bold tracking-tight">Memorable moment</h2>
+                  <p class="text-[13px] text-muted" x-text="form.label"></p>
+                </div>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="px-5 pb-4">
+                <textarea class="w-full h-28 rounded-xl border border-line bg-white px-3.5 py-3 text-base resize-none focus:outline-none focus:border-accent" placeholder="One line about the day…" x-model="form.note" x-init="$nextTick(() => $el.focus())"></textarea>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy">Save note</button>
+              </div>
+            </form>
+          </template>
+
+          <!-- Add or edit a symptom -->
+          <template x-if="sheet === 'symptomEditor'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveSymptom())">
+              <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
+                <h2 class="text-[22px] font-bold tracking-tight" x-text="form.id ? 'Edit symptom' : 'New symptom'"></h2>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="overflow-y-auto px-5 pb-4 flex flex-col gap-5">
+                <label class="flex flex-col gap-2">
+                  <span class="label">Name</span>
+                  <input class="input" x-model="form.name" placeholder="Heartburn" autocomplete="off" required>
+                </label>
+                <section class="flex flex-col gap-2.5">
+                  <h3 class="label">How do you want to rate it?</h3>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button type="button" class="card flex flex-col items-start px-3 py-2.5 text-left" :class="form.rating === 'scale' && '!border-2 !border-ink'" @click="form.rating = 'scale'">
+                      <span class="text-sm font-bold">1 – 10</span><span class="text-xs text-muted">How bad it was</span>
+                    </button>
+                    <button type="button" class="card flex flex-col items-start px-3 py-2.5 text-left" :class="form.rating === 'yesno' && '!border-2 !border-ink'" @click="form.rating = 'yesno'">
+                      <span class="text-sm font-bold">Yes / no</span><span class="text-xs text-muted">Just that it happened</span>
+                    </button>
+                  </div>
+                </section>
+                <section class="flex flex-col gap-2.5">
+                  <h3 class="label">Where can it happen? <span class="normal-case tracking-normal font-medium">(optional)</span></h3>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="place in form.locations" :key="place">
+                      <span class="chip">
+                        <span x-text="place"></span>
+                        <button type="button" class="text-muted" :aria-label="`Remove ${place}`" @click="toggle(form.locations, place)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+                      </span>
+                    </template>
+                  </div>
+                  <div class="flex gap-2">
+                    <input class="input h-10 text-sm" x-model="form.newLocation" placeholder="Add a place, e.g. Chest" @keydown.enter.prevent="addLocation()" aria-label="New place">
+                    <button type="button" class="btn-secondary h-10 shrink-0" @click="addLocation()">Add</button>
+                  </div>
+                </section>
+                <div class="card divide-y divide-[#EEF0F3]">
+                  <label class="flex items-center justify-between gap-3 px-4 py-3.5">
+                    <span class="flex flex-col"><span class="text-[15px] font-semibold">Show on Today</span><span class="text-xs text-muted">One-tap button, and a column in the month grid</span></span>
+                    <input type="checkbox" class="w-[22px] h-[22px] accent-[#2F5BD3]" x-model="form.show_on_today">
+                  </label>
+                  <label class="flex items-center justify-between gap-3 px-4 py-3.5">
+                    <span class="flex flex-col"><span class="text-[15px] font-semibold">Ask about it in check-in</span><span class="text-xs text-muted" x-text="`“Any ${(form.name || 'of it').toLowerCase()} today?”`"></span></span>
+                    <input type="checkbox" class="w-[22px] h-[22px] accent-[#2F5BD3]" x-model="form.ask_in_checkin">
+                  </label>
+                </div>
+                <button x-show="form.id" type="button" class="text-sm font-semibold text-sym-ink self-start" @click="attempt(() => archiveSymptom())">Hide this symptom</button>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy" x-text="form.id ? 'Save symptom' : 'Add symptom'"></button>
+              </div>
+            </form>
+          </template>
+
+          <!-- Add or edit a habit -->
+          <template x-if="sheet === 'habitEditor'">
+            <form class="flex flex-col min-h-0" @submit.prevent="attempt(() => saveHabit())">
+              <div class="flex items-center justify-between pl-5 pr-3 pt-4 pb-2">
+                <h2 class="text-[22px] font-bold tracking-tight" x-text="form.id ? 'Edit habit' : 'New habit'"></h2>
+                <button type="button" class="icon-btn" aria-label="Close" @click="closeSheet()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+              </div>
+              <div class="px-5 pb-4 flex flex-col gap-4">
+                <label class="flex flex-col gap-2">
+                  <span class="label">Name</span>
+                  <input class="input" x-model="form.name" placeholder="Cold shower" autocomplete="off" required x-init="$nextTick(() => $el.focus())">
+                </label>
+                <p class="text-sm text-muted">A column in the month grid. Mark it with an × on the days you do it.</p>
+                <button x-show="form.id" type="button" class="text-sm font-semibold text-sym-ink self-start" @click="attempt(() => archiveHabit())">Remove from the grid</button>
+              </div>
+              <div class="px-5 pt-3 pb-safe border-t border-line">
+                <button class="btn-primary" :disabled="busy" x-text="form.id ? 'Save habit' : 'Add habit'"></button>
+              </div>
+            </form>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Toast -->
+  <div x-show="toast" x-transition class="fixed z-[60] inset-x-4 bottom-28 md:bottom-6 flex justify-center pointer-events-none">
+    <div class="pointer-events-auto flex items-center gap-3 max-w-md rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-lg"
+      :class="toast?.error ? 'bg-sym' : 'bg-ink'" role="status">
+      <span x-text="toast?.message"></span>
+      <button x-show="toast?.undo" class="text-[#9DB5F5] font-bold" @click="undoToast()">Undo</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

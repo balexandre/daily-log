@@ -1,0 +1,9 @@
+# Credentials and the config made from them
+.env
+js/config.js
+
+# Data exports: your health data, never commit them
+daily-log-*.json
+
+.DS_Store
+_site/
