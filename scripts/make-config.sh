@@ -28,12 +28,26 @@ case "$key" in
 esac
 
 url="${url%/}"
+
+# What's running: the version from VERSION, plus the commit it was built from and that commit's date.
+version="$(tr -d '[:space:]' < VERSION)"
+commit="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+committed_at="$(git log -1 --format=%cI 2>/dev/null || echo '')"
+if ! git diff --quiet HEAD 2>/dev/null; then commit="$commit+local"; fi  # uncommitted changes
+repo="${GITHUB_REPOSITORY:-$(git remote get-url origin 2>/dev/null | sed -E 's#.*github\.com[:/]##; s#\.git$##')}"
+
 out="${1:-js/config.js}"
 cat > "$out" <<EOF
 // Made by scripts/make-config.sh. Not committed: it differs per setup.
 window.DAILY_LOG_CONFIG = {
   supabaseUrl: '$url',
   supabaseKey: '$key',
+  build: {
+    version: '$version',
+    commit: '$commit',
+    committedAt: '$committed_at',
+    repo: '$repo',
+  },
 };
 EOF
-echo "Wrote $out for $url"
+echo "Wrote $out for $url (version $version, commit $commit)"

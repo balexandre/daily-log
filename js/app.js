@@ -615,6 +615,20 @@ function app() {
       return Dates.parse(key).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
     },
 
+    // Version, commit and commit date of what's running, written into js/config.js by scripts/make-config.sh.
+    get build() {
+      const build = window.DAILY_LOG_CONFIG?.build ?? {};
+      const sha = (build.commit ?? '').replace('+local', '');
+      return {
+        version: build.version || 'unknown',
+        commit: build.commit || 'unknown',
+        date: build.committedAt
+          ? new Date(build.committedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+          : '',
+        url: build.repo && sha && sha !== 'unknown' ? `https://github.com/${build.repo}/commit/${sha}` : null,
+      };
+    },
+
     async exportData() {
       const data = await Store.exportAll();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });

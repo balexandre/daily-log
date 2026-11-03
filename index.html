@@ -472,8 +472,15 @@
               <p class="text-sm text-[#3D4350]">Signed in as <strong x-text="user?.email"></strong></p>
               <div class="flex flex-wrap gap-2">
                 <button class="btn-secondary" @click="attempt(() => exportData())">Export everything (JSON)</button>
-                <button class="btn-secondary" @click="attempt(() => signOut())">Sign out</button>
+                <button class="inline-flex items-center justify-center h-11 px-4 rounded-xl bg-[#C62828] hover:bg-[#A61F1F] text-white text-sm font-semibold" @click="attempt(() => signOut())">Sign out</button>
               </div>
+              <p class="pt-3 border-t border-[#EEF0F3] text-xs text-muted">
+                Version <strong class="text-[#3D4350]" x-text="build.version"></strong>
+                · commit
+                <a x-show="build.url" :href="build.url" target="_blank" rel="noopener" class="font-mono font-semibold text-accent" x-text="build.commit"></a>
+                <span x-show="!build.url" class="font-mono font-semibold text-[#3D4350]" x-text="build.commit"></span>
+                <span x-show="build.date" x-text="`· ${build.date}`"></span>
+              </p>
             </div>
           </section>
         </section>
