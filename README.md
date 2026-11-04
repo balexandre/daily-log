@@ -19,6 +19,7 @@ Plain HTML with [Alpine.js](https://alpinejs.dev) and [Tailwind CSS](https://tai
 | `supabase/schema.sql` | The database tables and their privacy rules |
 | `supabase/migrations/` | Changes to an existing database, run once each in order |
 | `scripts/make-config.sh` | Writes `js/config.js` (Supabase URL + publishable key, plus the version, commit and commit date shown in Setup) |
+| `docs/mockup/` | The original design mockup as plain HTML. Open `docs/mockup/index.html` in a browser to see every screen |
 | `VERSION` | The app's version number ([semantic versioning](https://semver.org)): bump it in the commit that ships a change |
 | `.github/workflows/pages.yml` | Publishes the site to GitHub Pages on every push to `master` |
 

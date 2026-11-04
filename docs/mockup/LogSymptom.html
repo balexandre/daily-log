@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log a symptom · Daily Log mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#2F5BD3}a:hover{color:#1E40AF}
+button{font:inherit;color:inherit;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;border:1px solid #DDE1E7;background:#fff;font-size:14px;font-weight:600;color:#16181D}
+.chip-on{background:#16181D;border-color:#16181D;color:#fff}
+.chip-sym{background:#B4480F;border-color:#B4480F;color:#fff}
+.chip-new{border:1.5px dashed #C9CED6;color:#3D4350;background:transparent}
+.label{margin:0;font-size:12px;font-weight:700;color:#5B6270;letter-spacing:.06em;text-transform:uppercase}
+.sev{height:40px;border-radius:10px;border:1px solid #DDE1E7;background:#fff;font-size:14px;font-weight:700;color:#16181D;padding:0}
+</style>
+</head>
+<body>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F5F6F8; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #16181D">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 12px 8px 20px">
+    <h1 style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em">Log a symptom</h1>
+    <a href="Main.html" aria-label="Close" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; color: #3D4350">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+  </header>
+
+  <div style="padding: 8px 20px 0; display: flex; flex-direction: column; gap: 22px">
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="label">What is it?</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button class="chip chip-sym">Headache</button>
+        <button class="chip">Belly pain</button>
+        <button class="chip">Bloating</button>
+        <button class="chip">Nausea</button>
+        <button class="chip">Tired</button>
+        <a href="NewSymptom.html" class="chip chip-new" style="text-decoration: none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          New symptom
+        </a>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 class="label">How bad?</h2>
+        <span style="font-size: 14px; font-weight: 700; color: #9A3A0A">6 · Moderate</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px">
+        <button class="sev">1</button>
+        <button class="sev">2</button>
+        <button class="sev">3</button>
+        <button class="sev">4</button>
+        <button class="sev">5</button>
+        <button class="sev" style="background: #B4480F; border-color: #B4480F; color: #fff">6</button>
+        <button class="sev">7</button>
+        <button class="sev">8</button>
+        <button class="sev">9</button>
+        <button class="sev">10</button>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; color: #5B6270"><span>Barely there</span><span>Worst ever</span></div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="label">Where?</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button class="chip">Forehead</button>
+        <button class="chip chip-on">Temples</button>
+        <button class="chip">Behind eyes</button>
+        <button class="chip">Back of head</button>
+        <button class="chip">One side</button>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="label">When did it start?</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button class="chip chip-on">Just now</button>
+        <button class="chip">30 min ago</button>
+        <button class="chip">1 h ago</button>
+        <button class="chip">Pick time…</button>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 class="label">Anything else? <span style="text-transform: none; letter-spacing: 0; font-weight: 500">(optional)</span></h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button class="chip chip-on">Light-sensitive</button>
+        <button class="chip">Nauseous</button>
+        <button class="chip">After screens</button>
+        <button class="chip">Took meds</button>
+      </div>
+      <label for="note" style="position: absolute; left: -9999px">Note</label>
+      <textarea id="note" placeholder="Add a note…" style="height: 56px; box-sizing: border-box; border-radius: 12px; border: 1px solid #DDE1E7; background: #fff; padding: 10px 12px; font: inherit; font-size: 14px; resize: none"></textarea>
+    </section>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 28px; background: #F5F6F8; border-top: 1px solid #E3E6EB">
+    <a href="Main.html" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 16px; background: #2F5BD3; color: #fff; font-size: 16px; font-weight: 700; text-decoration: none">Save headache</a>
+  </div>
+</div>
+</body>
+</html>

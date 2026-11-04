@@ -1,0 +1,1439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Month grid — website · Daily Log mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+a{color:#2F5BD3}a:hover{color:#1E40AF}
+button{font:inherit;color:inherit;cursor:pointer}
+.vlabel{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;font-weight:700;white-space:nowrap;align-self:end;justify-self:center;padding-bottom:8px}
+.cell{display:flex;align-items:center;justify-content:center;border:0;border-left:1px solid #EEF0F3;background:transparent;padding:0;font-size:18px;font-weight:700;line-height:1;color:#16181D}
+.cell:hover{background:#E7EDFC}
+.navlink{display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:600;color:#3D4350;text-decoration:none}
+</style>
+</head>
+<body>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F5F6F8; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #16181D">
+  <header style="background: #fff; border-bottom: 1px solid #E3E6EB">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em">Daily Log</span>
+      <nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+        <a href="Main.html" class="navlink">Today</a>
+        <a href="MonthWeb.html" class="navlink" style="background: #E7EDFC; color: #1F45B0">Month</a>
+        <a href="Insights.html" class="navlink">Patterns</a>
+        <a href="NewSymptom.html" class="navlink">Setup</a>
+      </nav>
+      <a href="LogSymptom.html" style="display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: 12px; background: #2F5BD3; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Log
+      </a>
+    </div>
+  </header>
+
+  <main style="max-width: 1240px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <button aria-label="Previous month" style="width: 40px; height: 40px; border: 1px solid #DDE1E7; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <h1 style="margin: 0 10px; font-size: 28px; font-weight: 700; letter-spacing: -0.02em">October 2026</h1>
+        <button aria-label="Next month" style="width: 40px; height: 40px; border: 1px solid #DDE1E7; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: #5B6270">Click a square to mark it · click a note to edit · example data</p>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #E3E6EB; border-radius: 18px; overflow-x: auto">
+      <div style="min-width: 1000px; padding: 8px 16px 12px">
+        <div style="display: grid; grid-template-columns: 64px minmax(260px, 1fr) repeat(5, 44px) 44px 16px repeat(2, 44px) 16px 200px; height: 124px; border-bottom: 2px solid #16181D">
+          <span style="align-self: end; padding-bottom: 8px; font-size: 12px; font-weight: 700; color: #5B6270; letter-spacing: .06em; text-transform: uppercase">Day</span>
+          <span style="align-self: end; padding: 0 0 8px 12px; font-size: 12px; font-weight: 700; color: #5B6270; letter-spacing: .06em; text-transform: uppercase">Memorable moment</span>
+          
+            <span class="vlabel">Water 8+</span>
+          
+            <span class="vlabel">Walk</span>
+          
+            <span class="vlabel">Coffee &lt; 2pm</span>
+          
+            <span class="vlabel">Screens off 22h</span>
+          
+            <span class="vlabel">Dairy</span>
+          
+          <button aria-label="Add a habit column" style="align-self: end; justify-self: center; width: 30px; height: 30px; margin-bottom: 6px; border: 1.5px dashed #9AA1AD; border-radius: 8px; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; color: #3D4350">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <span></span>
+          <span class="vlabel" style="color: #9A3A0A">Headache</span>
+          <span class="vlabel" style="color: #9A3A0A">Belly pain</span>
+          <span></span>
+          <div style="align-self: end; display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px">
+            <span style="font-size: 12px; font-weight: 700; color: #1F45B0">Sleep (hours)</span>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #5B6270"><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+          </div>
+        </div>
+
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">1</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Thu</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Pizza night with Ana</span>
+            
+              <button class="cell" aria-label="Water 8+, October 1" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 1" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 1" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 1" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 1" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(55.00000000000001% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">2</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Fri</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Late deploy, slept badly</span>
+            
+              <button class="cell" aria-label="Water 8+, October 2" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 2" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 2" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 2" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 2" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">4</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(27.499999999999993% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">3</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sat</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Cheese board at lunch</span>
+            
+              <button class="cell" aria-label="Water 8+, October 3" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 3" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 3" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 3" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 3" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">5</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(62.5% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">4</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sun</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Rainy, stayed in</span>
+            
+              <button class="cell" aria-label="Water 8+, October 4" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 4" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 4" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 4" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 4" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">6</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(19.999999999999996% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">5</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Mon</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 5" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 5" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 5" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 5" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 5" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(25% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">6</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Tue</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Long walk by the river</span>
+            
+              <button class="cell" aria-label="Water 8+, October 6" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 6" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 6" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 6" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 6" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(70% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">7</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Wed</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Dentist</span>
+            
+              <button class="cell" aria-label="Water 8+, October 7" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 7" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 7" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 7" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 7" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">3</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(77.49999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">8</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Thu</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 8" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 8" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 8" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 8" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 8" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(35.00000000000001% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">9</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Fri</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Team lunch: lasagne</span>
+            
+              <button class="cell" aria-label="Water 8+, October 9" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 9" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 9" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 9" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 9" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">4</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(50% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">10</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sat</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Bad night, deadline</span>
+            
+              <button class="cell" aria-label="Water 8+, October 10" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 10" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 10" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 10" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 10" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">7</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(12.5% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">11</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sun</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Too much coffee</span>
+            
+              <button class="cell" aria-label="Water 8+, October 11" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 11" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 11" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 11" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 11" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">3</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(30.000000000000004% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">12</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Mon</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Visited parents</span>
+            
+              <button class="cell" aria-label="Water 8+, October 12" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 12" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 12" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 12" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 12" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(60.00000000000001% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">13</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Tue</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Ice cream in the park</span>
+            
+              <button class="cell" aria-label="Water 8+, October 13" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 13" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 13" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 13" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 13" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">6</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(72.50000000000001% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">14</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Wed</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 14" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 14" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 14" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 14" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 14" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(25% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">15</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Thu</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Cinema</span>
+            
+              <button class="cell" aria-label="Water 8+, October 15" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 15" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 15" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 15" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 15" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(52.49999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">16</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Fri</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Cooked risotto</span>
+            
+              <button class="cell" aria-label="Water 8+, October 16" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 16" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 16" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 16" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 16" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(44.99999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">17</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sat</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Woke at 4 am</span>
+            
+              <button class="cell" aria-label="Water 8+, October 17" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 17" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 17" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 17" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 17" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">5</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(22.500000000000007% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">18</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sun</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 18" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 18" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 18" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 18" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 18" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(64.99999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">19</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Mon</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Milkshake after gym</span>
+            
+              <button class="cell" aria-label="Water 8+, October 19" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 19" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 19" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 19" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 19" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">3</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(75% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">20</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Tue</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 20" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 20" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 20" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 20" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 20" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(57.49999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">21</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Wed</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Flight back home</span>
+            
+              <button class="cell" aria-label="Water 8+, October 21" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 21" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 21" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 21" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 21" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">4</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(27.499999999999993% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">22</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Thu</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Quiet day</span>
+            
+              <button class="cell" aria-label="Water 8+, October 22" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 22" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 22" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 22" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 22" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(50% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">23</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Fri</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 23" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 23" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 23" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 23" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 23" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(67.5% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">24</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sat</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Party, late night</span>
+            
+              <button class="cell" aria-label="Water 8+, October 24" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 24" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 24" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 24" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 24" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">6</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(14.999999999999991% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">25</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sun</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 25" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 25" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 25" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 25" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 25" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(32.49999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">26</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Mon</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Brunch: eggs benedict</span>
+            
+              <button class="cell" aria-label="Water 8+, October 26" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 26" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 26" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 26" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 26" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">5</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(62.5% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">27</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Tue</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Hike, great sleep</span>
+            
+              <button class="cell" aria-label="Water 8+, October 27" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 27" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 27" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 27" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 27" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(79.99999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">28</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Wed</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 28" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 28" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 28" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 28" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 28" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(52.49999999999999% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">29</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Thu</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Screens till 1 am</span>
+            
+              <button class="cell" aria-label="Water 8+, October 29" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 29" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 29" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 29" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 29" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">4</span>
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(25% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#fff">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">30</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Fri</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#16181D">Carbonara for dinner</span>
+            
+              <button class="cell" aria-label="Water 8+, October 30" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 30" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 30" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 30" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 30" aria-pressed="true">
+                ×
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+                <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 20px; border-radius: 5px; background: #B4480F; color: #fff; font-size: 12px; font-weight: 700">4</span>
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(60.00000000000001% - 4px)"></span>
+            </span>
+          </div>
+        
+          <div style="display:grid;grid-template-columns:64px minmax(260px,1fr) repeat(5,44px) 44px 16px repeat(2,44px) 16px 200px;height:28px;border-bottom:1px solid #EEF0F3;background:#F5F6F8">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <span style="font-size: 13px; font-weight: 700; width: 18px; text-align: right">31</span>
+              <span style="font-size: 11px; font-weight: 600; color: #5B6270">Sat</span>
+            </span>
+            <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9AA1AD">Add a note…</span>
+            
+              <button class="cell" aria-label="Water 8+, October 31" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Walk, October 31" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Coffee &lt; 2pm, October 31" aria-pressed="false">
+                
+              </button>
+            
+              <button class="cell" aria-label="Screens off 22h, October 31" aria-pressed="true">
+                ×
+              </button>
+            
+              <button class="cell" aria-label="Dairy, October 31" aria-pressed="false">
+                
+              </button>
+            
+            <span style="border-left: 1px solid #EEF0F3"></span>
+            <span></span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3">
+              
+            </span>
+            <span style="display: flex; align-items: center; justify-content: center; border-left: 1px solid #EEF0F3; border-right: 1px solid #EEF0F3">
+              
+            </span>
+            <span></span>
+            <span style="position: relative">
+              <span style="position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed #C9CED6"></span>
+              <span style="position:absolute;top:10px;width:9px;height:9px;border-radius:999px;background:#2F5BD3;left:calc(47.50000000000001% - 4px)"></span>
+            </span>
+          </div>
+        
+
+        <div style="display: grid; grid-template-columns: 64px minmax(260px, 1fr) repeat(5, 44px) 44px 16px repeat(2, 44px) 16px 200px; height: 40px; align-items: center; border-top: 2px solid #16181D">
+          <span style="font-size: 12px; font-weight: 700; color: #5B6270; letter-spacing: .06em; text-transform: uppercase">Total</span>
+          <span></span>
+          
+            <span style="text-align: center; font-size: 14px; font-weight: 700">21/31</span>
+          
+            <span style="text-align: center; font-size: 14px; font-weight: 700">14/31</span>
+          
+            <span style="text-align: center; font-size: 14px; font-weight: 700">22/31</span>
+          
+            <span style="text-align: center; font-size: 14px; font-weight: 700">13/31</span>
+          
+            <span style="text-align: center; font-size: 14px; font-weight: 700">12/31</span>
+          
+          <span></span>
+          <span></span>
+          <span style="text-align: center; font-size: 14px; font-weight: 700; color: #9A3A0A">8</span>
+          <span style="text-align: center; font-size: 14px; font-weight: 700; color: #9A3A0A">7</span>
+          <span></span>
+          <span style="font-size: 13px; font-weight: 700; color: #1F45B0">avg 6.9 h</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
